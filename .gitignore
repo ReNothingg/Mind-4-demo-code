@@ -1,0 +1,14 @@
+checkpoints/
+data/
+scraper/
+tests/
+__pycache__/
+__init__.py
+.venv
+.env
+model/tools
+tokenizer/tokenizer.json
+train/
+dataset/
+.vscode/
+venv/
