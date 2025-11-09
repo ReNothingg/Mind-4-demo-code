@@ -19,16 +19,17 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -S metal -B build/metal -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: |
-          cmake --build build --config Release
+          cmake --build build/metal --config Release
 
       - name: Run CTest (if any)
-        working-directory: build
+        if: matrix.os != 'windows-latest'
+        working-directory: build/metal
         run: |
-          if [ -f build/CTestTestfile.cmake ]; then ctest -C Release || true; fi
+          if [ -f CTestTestfile.cmake ]; then ctest -C Release || true; fi
 
   python_checks:
     name: Python checks
