@@ -9,10 +9,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_OBJC_STANDARD 11)
 set(CMAKE_OBJC_STANDARD_REQUIRED ON)
 
-find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
-find_library(METAL_FRAMEWORK      Metal      REQUIRED)
-find_library(IOKIT_FRAMEWORK      IOKit      REQUIRED)
-
 set(METAL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/accumulate.metal
     ${CMAKE_CURRENT_SOURCE_DIR}/source/convert.metal
@@ -27,43 +23,53 @@ set(METAL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/topk.metal
 )
 set(METAL_LIB default.metallib)
-
+set(METAL_LIB default.metallib)
 include_directories(BEFORE include source/include)
 
-add_custom_command(
-    OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/source/"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/accumulate.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/accumulate.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/convert.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/convert.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/embeddings.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/embeddings.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/matmul.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/matmul.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/moematmul.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/moematmul.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/random.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/random.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/rmsnorm.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/rmsnorm.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/rope.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/rope.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/sample.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/sample.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/sdpa.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/sdpa.air"
-    COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/topk.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/topk.air"
-    COMMAND xcrun -sdk macosx metallib "${CMAKE_CURRENT_BINARY_DIR}/source/accumulate.air" "${CMAKE_CURRENT_BINARY_DIR}/source/convert.air" "${CMAKE_CURRENT_BINARY_DIR}/source/embeddings.air" "${CMAKE_CURRENT_BINARY_DIR}/source/matmul.air" "${CMAKE_CURRENT_BINARY_DIR}/source/moematmul.air" "${CMAKE_CURRENT_BINARY_DIR}/source/random.air" "${CMAKE_CURRENT_BINARY_DIR}/source/rmsnorm.air" "${CMAKE_CURRENT_BINARY_DIR}/source/rope.air" "${CMAKE_CURRENT_BINARY_DIR}/source/sample.air"  "${CMAKE_CURRENT_BINARY_DIR}/source/sdpa.air" "${CMAKE_CURRENT_BINARY_DIR}/source/topk.air" -o "${METAL_LIB}"
-    DEPENDS ${METAL_SOURCES}
-    COMMENT "Compiling Metal compute library"
-)
+if(APPLE)
+    find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
+    find_library(METAL_FRAMEWORK      Metal      REQUIRED)
+    find_library(IOKIT_FRAMEWORK      IOKit      REQUIRED)
 
-add_custom_target(build_metallib ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB})
+    add_custom_command(
+        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/source/"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/accumulate.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/accumulate.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/convert.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/convert.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/embeddings.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/embeddings.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/matmul.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/matmul.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/moematmul.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/moematmul.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/random.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/random.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/rmsnorm.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/rmsnorm.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/rope.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/rope.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/sample.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/sample.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/sdpa.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/sdpa.air"
+        COMMAND xcrun -sdk macosx metal -g "-I${CMAKE_CURRENT_SOURCE_DIR}/source/include" -c "${CMAKE_CURRENT_SOURCE_DIR}/source/topk.metal" -o "${CMAKE_CURRENT_BINARY_DIR}/source/topk.air"
+        COMMAND xcrun -sdk macosx metallib "${CMAKE_CURRENT_BINARY_DIR}/source/accumulate.air" "${CMAKE_CURRENT_BINARY_DIR}/source/convert.air" "${CMAKE_CURRENT_BINARY_DIR}/source/embeddings.air" "${CMAKE_CURRENT_BINARY_DIR}/source/matmul.air" "${CMAKE_CURRENT_BINARY_DIR}/source/moematmul.air" "${CMAKE_CURRENT_BINARY_DIR}/source/random.air" "${CMAKE_CURRENT_BINARY_DIR}/source/rmsnorm.air" "${CMAKE_CURRENT_BINARY_DIR}/source/rope.air" "${CMAKE_CURRENT_BINARY_DIR}/source/sample.air"  "${CMAKE_CURRENT_BINARY_DIR}/source/sdpa.air" "${CMAKE_CURRENT_BINARY_DIR}/source/topk.air" -o "${METAL_LIB}"
+        DEPENDS ${METAL_SOURCES}
+        COMMENT "Compiling Metal compute library"
+    )
 
-add_library(log OBJECT source/log.c)
+    add_custom_target(build_metallib ALL
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB})
 
-add_library(metal-kernels STATIC source/metal.m source/metal-kernels.c)
-target_link_libraries(metal-kernels PRIVATE log)
+    add_library(log OBJECT source/log.c)
 
-add_dependencies(metal-kernels build_metallib)
-add_custom_command(TARGET metal-kernels POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
-            $<TARGET_FILE_DIR:metal-kernels>)
+    add_library(metal-kernels STATIC source/metal.m source/metal-kernels.c)
+    target_link_libraries(metal-kernels PRIVATE log)
 
-target_link_libraries(metal-kernels PRIVATE ${FOUNDATION_FRAMEWORK} ${METAL_FRAMEWORK} ${IOKIT_FRAMEWORK})
+    add_dependencies(metal-kernels build_metallib)
+    add_custom_command(TARGET metal-kernels POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
+                $<TARGET_FILE_DIR:metal-kernels>)
+
+    target_link_libraries(metal-kernels PRIVATE ${FOUNDATION_FRAMEWORK} ${METAL_FRAMEWORK} ${IOKIT_FRAMEWORK})
+else()
+    add_library(log OBJECT source/log.c)
+    add_library(metal-kernels INTERFACE)
+    target_link_libraries(metal-kernels INTERFACE $<TARGET_OBJECTS:log>)
+endif()
 
 add_library(mindfour STATIC source/model.c source/tokenizer.c source/context.c)
 target_link_libraries(mindfour PRIVATE log metal-kernels)
@@ -159,16 +165,20 @@ pybind11_add_module(_metal
 set_target_properties(_metal PROPERTIES PREFIX "")
 
 target_link_libraries(_metal PRIVATE mindfour)
-add_dependencies(_metal build_metallib)
-target_link_options(_metal PRIVATE
-    LINKER:-sectcreate,__METAL,__shaders,${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
-)
-add_custom_command(TARGET _metal POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
-            $<TARGET_FILE_DIR:_metal>)
+if(APPLE)
+    add_dependencies(_metal build_metallib)
+    target_link_options(_metal PRIVATE
+        LINKER:-sectcreate,__METAL,__shaders,${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
+    )
+    add_custom_command(TARGET _metal POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
+                $<TARGET_FILE_DIR:_metal>)
 
-install(TARGETS _metal LIBRARY DESTINATION mind-four/metal)
+    install(TARGETS _metal LIBRARY DESTINATION mind-four/metal)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
-        DESTINATION mind-four/metal)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${METAL_LIB}
+            DESTINATION mind-four/metal)
+else()
+    install(TARGETS _metal LIBRARY DESTINATION mind-four/metal)
+endif()
